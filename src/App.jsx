@@ -5,6 +5,7 @@ import Auth from './Auth'
 import Dashboard from './Dashboard'
 import Join from './Join'
 import Status from './Status'
+import Lobby from './Lobby'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -26,6 +27,7 @@ export default function App() {
       <Route path="/" element={session ? <Dashboard session={session} /> : <Auth />} />
       <Route path="/c/:clinicId" element={<Join />} />
       <Route path="/t/:tokenId" element={<Status />} />
+      <Route path="/tv/:clinicId" element={<Lobby />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
