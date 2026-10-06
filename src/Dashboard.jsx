@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { QRCodeCanvas } from 'qrcode.react'
 import { supabase } from './supabase'
+import Queue from './Queue'
 
 export default function Dashboard({ session }) {
   const [clinic, setClinic] = useState(null)
@@ -8,6 +9,7 @@ export default function Dashboard({ session }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [copied, setCopied] = useState(false)
+  const [tab, setTab] = useState('queue')
   const [clinicForm, setClinicForm] = useState({ name: '', address: '' })
   const [docForm, setDocForm] = useState({ name: '', specialty: '', avg_consult_minutes: 10 })
 
@@ -126,53 +128,66 @@ export default function Dashboard({ session }) {
         <button className="ghost" onClick={() => supabase.auth.signOut()}>Log out</button>
       </div>
 
+      <div className="tabs">
+        <button className={tab === 'queue' ? 'tab active' : 'tab'} onClick={() => setTab('queue')}>Queue</button>
+        <button className={tab === 'setup' ? 'tab active' : 'tab'} onClick={() => setTab('setup')}>Setup</button>
+      </div>
+
       {error && <div className="error">{error}</div>}
 
-      <div className="card section">
-        <h2>Patient QR code</h2>
-        <p className="muted">Print this and place it at the entrance and reception. Patients scan it to join the queue.</p>
-        <div className="qrbox">
-          <QRCodeCanvas id="clinic-qr" value={joinLink} size={220} includeMargin={true} />
-        </div>
-        <p className="muted" style={{ wordBreak: 'break-all', textAlign: 'center' }}>{joinLink}</p>
-        <div className="row">
-          <button onClick={downloadQR}>Download QR</button>
-          <button className="ghost" onClick={() => copyLink(joinLink)}>{copied ? 'Copied!' : 'Copy link'}</button>
-        </div>
-      </div>
+      {tab === 'queue' && (
+        <Queue clinic={clinic} doctors={doctors} onDoctorsChange={() => loadDoctors(clinic.id)} />
+      )}
 
-      <form className="card section" onSubmit={addDoctor}>
-        <h2>Add a doctor</h2>
-        <input placeholder="Doctor name" value={docForm.name} onChange={(e) => setDocForm({ ...docForm, name: e.target.value })} required />
-        <div className="row">
-          <input placeholder="Specialty (e.g. General)" value={docForm.specialty} onChange={(e) => setDocForm({ ...docForm, specialty: e.target.value })} />
-          <input type="number" min="1" placeholder="Avg consult (min)" value={docForm.avg_consult_minutes} onChange={(e) => setDocForm({ ...docForm, avg_consult_minutes: e.target.value })} />
-        </div>
-        <button className="full">Add doctor</button>
-      </form>
-
-      <div className="card section">
-        <h2>Doctors ({doctors.length})</h2>
-        {doctors.length === 0 && <p className="muted">No doctors yet. Add one above.</p>}
-        {doctors.map((d) => (
-          <div className="doctor" key={d.id}>
-            <div>
-              <strong>{d.name}</strong>
-              <div className="muted" style={{ margin: 0 }}>
-                {d.specialty || 'General'} · ~{d.avg_consult_minutes} min per patient
-              </div>
+      {tab === 'setup' && (
+        <>
+          <div className="card section">
+            <h2>Patient QR code</h2>
+            <p className="muted">Print this and place it at the entrance and reception. Patients scan it to join the queue.</p>
+            <div className="qrbox">
+              <QRCodeCanvas id="clinic-qr" value={joinLink} size={220} includeMargin={true} />
             </div>
-            <div className="actions">
-              <select value={d.status} onChange={(e) => updateStatus(d.id, e.target.value)}>
-                <option value="available">Available</option>
-                <option value="paused">Paused</option>
-                <option value="closed">Closed</option>
-              </select>
-              <button className="danger" onClick={() => deleteDoctor(d.id)}>Delete</button>
+            <p className="muted" style={{ wordBreak: 'break-all', textAlign: 'center' }}>{joinLink}</p>
+            <div className="row">
+              <button onClick={downloadQR}>Download QR</button>
+              <button className="ghost" onClick={() => copyLink(joinLink)}>{copied ? 'Copied!' : 'Copy link'}</button>
             </div>
           </div>
-        ))}
-      </div>
+
+          <form className="card section" onSubmit={addDoctor}>
+            <h2>Add a doctor</h2>
+            <input placeholder="Doctor name" value={docForm.name} onChange={(e) => setDocForm({ ...docForm, name: e.target.value })} required />
+            <div className="row">
+              <input placeholder="Specialty (e.g. General)" value={docForm.specialty} onChange={(e) => setDocForm({ ...docForm, specialty: e.target.value })} />
+              <input type="number" min="1" placeholder="Avg consult (min)" value={docForm.avg_consult_minutes} onChange={(e) => setDocForm({ ...docForm, avg_consult_minutes: e.target.value })} />
+            </div>
+            <button className="full">Add doctor</button>
+          </form>
+
+          <div className="card section">
+            <h2>Doctors ({doctors.length})</h2>
+            {doctors.length === 0 && <p className="muted">No doctors yet. Add one above.</p>}
+            {doctors.map((d) => (
+              <div className="doctor" key={d.id}>
+                <div>
+                  <strong>{d.name}</strong>
+                  <div className="muted" style={{ margin: 0 }}>
+                    {d.specialty || 'General'} · ~{d.avg_consult_minutes} min per patient
+                  </div>
+                </div>
+                <div className="actions">
+                  <select value={d.status} onChange={(e) => updateStatus(d.id, e.target.value)}>
+                    <option value="available">Available</option>
+                    <option value="paused">Paused</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                  <button className="danger" onClick={() => deleteDoctor(d.id)}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
