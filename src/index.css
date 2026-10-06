@@ -23,3 +23,8 @@ button:disabled { opacity: .6; cursor: not-allowed; }
 .doctor select { width: auto; margin: 0; padding: 8px; }
 .actions { display: flex; gap: 8px; align-items: center; }
 .section { margin-bottom: 20px; max-width: none; }
+.qrbox { display: flex; justify-content: center; margin: 12px 0; }
+.token-big { font-size: 64px; font-weight: 800; color: #0f766e; line-height: 1.1; margin: 6px 0; }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.stat-num { font-size: 32px; font-weight: 700; }
+.banner-warn { background: #fef3c7; color: #92400e; padding: 10px 12px; border-radius: 8px; margin: 12px 0; font-size: 14px; }

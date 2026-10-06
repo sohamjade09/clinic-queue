@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { QRCodeCanvas } from 'qrcode.react'
 import { supabase } from './supabase'
 
 export default function Dashboard({ session }) {
@@ -6,6 +7,7 @@ export default function Dashboard({ session }) {
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
   const [clinicForm, setClinicForm] = useState({ name: '', address: '' })
   const [docForm, setDocForm] = useState({ name: '', specialty: '', avg_consult_minutes: 10 })
 
@@ -78,6 +80,20 @@ export default function Dashboard({ session }) {
     else loadDoctors(clinic.id)
   }
 
+  function downloadQR() {
+    const canvas = document.getElementById('clinic-qr')
+    const a = document.createElement('a')
+    a.href = canvas.toDataURL('image/png')
+    a.download = clinic.name.replace(/\s+/g, '-') + '-queue-qr.png'
+    a.click()
+  }
+
+  function copyLink(link) {
+    navigator.clipboard.writeText(link)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   if (loading) return <div className="center">Loading...</div>
 
   if (!clinic) {
@@ -98,6 +114,8 @@ export default function Dashboard({ session }) {
     )
   }
 
+  const joinLink = window.location.origin + '/c/' + clinic.id
+
   return (
     <div className="wrap">
       <div className="topbar">
@@ -109,6 +127,19 @@ export default function Dashboard({ session }) {
       </div>
 
       {error && <div className="error">{error}</div>}
+
+      <div className="card section">
+        <h2>Patient QR code</h2>
+        <p className="muted">Print this and place it at the entrance and reception. Patients scan it to join the queue.</p>
+        <div className="qrbox">
+          <QRCodeCanvas id="clinic-qr" value={joinLink} size={220} includeMargin={true} />
+        </div>
+        <p className="muted" style={{ wordBreak: 'break-all', textAlign: 'center' }}>{joinLink}</p>
+        <div className="row">
+          <button onClick={downloadQR}>Download QR</button>
+          <button className="ghost" onClick={() => copyLink(joinLink)}>{copied ? 'Copied!' : 'Copy link'}</button>
+        </div>
+      </div>
 
       <form className="card section" onSubmit={addDoctor}>
         <h2>Add a doctor</h2>

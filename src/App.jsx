@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './supabase'
 import Auth from './Auth'
 import Dashboard from './Dashboard'
+import Join from './Join'
+import Status from './Status'
 
 export default function App() {
   const [session, setSession] = useState(null)
@@ -22,6 +24,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/" element={session ? <Dashboard session={session} /> : <Auth />} />
+      <Route path="/c/:clinicId" element={<Join />} />
+      <Route path="/t/:tokenId" element={<Status />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )
